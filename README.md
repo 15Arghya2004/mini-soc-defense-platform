@@ -32,25 +32,7 @@ Sentrix Command Center Dashboard
 - Executive Risk Dashboard
 - SOC Analyst View
 
-## Project Status
 
-### Day 1
-- [x] Kali VM Setup
-- [x] DVWA Deployment
-- [x] Host-Only Network Configuration
-- [x] Nmap Reconnaissance Validation
-
-### Day 2
-- [ ] Suricata Integration
-- [ ] Wazuh Deployment
-
-### Day 3
-- [ ] Threat Scoring Engine
-- [ ] Keycloak Integration
-
-### Day 4
-- [ ] Shuffle Automation
-- [ ] Command Center Dashboard
 
 ## Author
 
