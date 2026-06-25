@@ -1,0 +1,27 @@
+{
+    "T1110": {
+        "name": "Brute Force",
+        "tactic": "Credential Access",
+        "description": "Adversaries may use brute force techniques to gain access to accounts."
+    },
+    "T1078": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access",
+        "description": "Adversaries may obtain and abuse credentials of existing accounts."
+    },
+    "T1059": {
+        "name": "Command and Scripting Interpreter",
+        "tactic": "Execution",
+        "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries."
+    },
+    "T1046": {
+        "name": "Network Service Discovery",
+        "tactic": "Discovery",
+        "description": "Adversaries may attempt to get a listing of services listening on remote hosts."
+    },
+    "T1071": {
+        "name": "Application Layer Protocol",
+        "tactic": "Command and Control",
+        "description": "Adversaries may communicate using application layer protocols to avoid detection/network filtering."
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000009",
+    "rule_name": "Lateral Movement via SMB",
+    "description": "Detects Lateral Movement via SMB",
+    "category": "Lateral Movement",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Lateral Movement",
+            "technique_id": "T1021"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "destination.port",
+                "operator": "equals",
+                "value": 445
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

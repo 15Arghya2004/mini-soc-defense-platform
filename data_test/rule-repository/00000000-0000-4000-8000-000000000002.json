@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000002",
+    "rule_name": "Network Port Scan",
+    "description": "Detects Network Port Scan",
+    "category": "Reconnaissance",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Discovery",
+            "technique_id": "T1046"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "event_type",
+                "operator": "equals",
+                "value": "connection_attempt"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

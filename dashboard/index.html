@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentrix V10 - Unified SOC Platform</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-base: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-panel-hover: #334155;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-accent: #38bdf8;
+            
+            --accent-primary: #0ea5e9;
+            --accent-secondary: #8b5cf6;
+            
+            --border-color: #334155;
+            --border-radius: 12px;
+            
+            /* Status Colors */
+            --critical: #ef4444;
+            --high: #f97316;
+            --medium: #eab308;
+            --low: #22c55e;
+            --info: #3b82f6;
+
+            /* Glassmorphism */
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 260px;
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            z-index: 10;
+        }
+
+        .logo-container {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo-container h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-panel-hover);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background-color: rgba(14, 165, 233, 0.15);
+            color: var(--text-accent);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.8;
+            fill: currentColor;
+        }
+
+        .system-status {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--low);
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--low);
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        .header {
+            height: 70px;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .connection-status {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--low);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .connection-status.disconnected {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--critical);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* ── Dashboard Layout ── */
+        .dashboard-container {
+            padding: 30px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Views */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .view-section.active {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-primary), transparent);
+        }
+
+        .kpi-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .kpi-subtext {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Main Panels Grid */
+        .panel-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .panel-grid.split-even {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            height: 400px;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .panel-content {
+            padding: 0; /* Let tables/lists fill */
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .panel-content.padded {
+            padding: 20px;
+        }
+
+        /* ── Tables ── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px 20px;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(255,255,255,0.02);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .data-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        /* Severity Tags */
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .tag.critical { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .tag.high     { background-color: rgba(249, 115, 22, 0.15); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.3); }
+        .tag.medium   { background-color: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+        .tag.low      { background-color: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .tag.info     { background-color: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        .tag.source-suricata { background-color: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .tag.source-wazuh { background-color: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.3); }
+
+        /* Generic utilities */
+        .text-truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+
+        .muted { color: var(--text-muted); }
+        .mono { font-family: 'Courier New', Courier, monospace; }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Live Feed Animation */
+        .new-row {
+            animation: highlight 2s ease-out;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(14, 165, 233, 0.3); }
+            100% { background-color: transparent; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    </style>
+</head>
+<body>
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <div class="logo-container">
+            <h1>Sentrix V10</h1>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Unified SOC Platform</div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item active" data-target="view-home">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                Overview
+            </li>
+            <li class="nav-item" data-target="view-live">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                Live Alerts
+            </li>
+            <li class="nav-item" data-target="view-incidents">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9h-2V7h4v2h-2v3zm2 4H10v-2h4v2z"/></svg>
+                Correlations
+            </li>
+            <li class="nav-item" data-target="view-predictions">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                Predictions
+            </li>
+            <li class="nav-item" data-target="view-investigations">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Investigations
+            </li>
+            <li class="nav-item" data-target="view-intel">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                Threat Intel & IOC
+            </li>
+            <li class="nav-item" data-target="view-mitre">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/></svg>
+                MITRE ATT&CK
+            </li>
+            <li class="nav-item" data-target="view-timeline">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                Timeline
+            </li>
+        </ul>
+        
+        <div class="system-status">
+            <div class="status-indicator" id="ws-status-led"></div>
+            <span id="ws-status-text">WS Connecting...</span>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+        
+        <header class="header">
+            <h2 class="page-title" id="current-page-title">SOC Overview</h2>
+            <div class="header-actions">
+                <div class="connection-status" id="api-status">
+                    <span class="status-indicator"></span> API Online
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            
+            <!-- VIEW: HOME / OVERVIEW -->
+            <div id="view-home" class="view-section active">
+                
+                <!-- KPI Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">Total Ingested Events</div>
+                        <div class="kpi-value" id="kpi-events">0</div>
+                        <div class="kpi-subtext">
+                            <span id="kpi-suricata">Suricata: 0</span>
+                            <span id="kpi-wazuh">Wazuh: 0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Active Alerts</div>
+                        <div class="kpi-value" id="kpi-alerts">0</div>
+                        <div class="kpi-subtext" style="color: var(--critical);">
+                            <span id="kpi-critical">Critical: 0</span>
+                            <span id="kpi-high" style="color: var(--high);">High: 0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Tracked Attackers</div>
+                        <div class="kpi-value" id="kpi-attackers">0</div>
+                        <div class="kpi-subtext">
+                            <span id="kpi-avg-risk">Avg Risk Score: 0.0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Correlated Incidents</div>
+                        <div class="kpi-value" id="kpi-incidents">0</div>
+                        <div class="kpi-subtext">
+                            <span class="muted">Cross-source confirmed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panels Grid 1 -->
+                <div class="panel-grid">
+                    <!-- Live Alert Feed -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Live Alert Feed</div>
+                        </div>
+                        <div class="panel-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Severity</th>
+                                        <th>Source IP</th>
+                                        <th>Rule / Detection</th>
+                                        <th>Engine</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="live-alert-table-body">
+                                    <tr><td colspan="5" class="muted" style="text-align: center;">Waiting for alerts...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Severity Chart -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Alerts by Severity</div>
+                        </div>
+                        <div class="panel-content padded">
+                            <div class="chart-container">
+                                <canvas id="severityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panels Grid 2 -->
+                <div class="panel-grid split-even">
+                    <!-- Top Attackers -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Top Attackers</div>
+                        </div>
+                        <div class="panel-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Attacker IP</th>
+                                        <th>Alerts</th>
+                                        <th>Max Risk</th>
+                                        <th>Last Seen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-attackers-body">
+                                    <tr><td colspan="4" class="muted" style="text-align: center;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Predictions -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Threat Forecast (Next Step)</div>
+                        </div>
+                        <div class="panel-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Target IP</th>
+                                        <th>Predicted Stage</th>
+                                        <th>Prob.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="forecast-body">
+                                    <tr><td colspan="3" class="muted" style="text-align: center;">No active forecasts</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- VIEW: LIVE ALERTS -->
+            <div id="view-live" class="view-section">
+                <div class="panel" style="height: 800px;">
+                    <div class="panel-header">
+                        <div class="panel-title">All Alerts (Suricata + Wazuh)</div>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Alert ID</th>
+                                    <th>Severity</th>
+                                    <th>Source Type</th>
+                                    <th>Source IP</th>
+                                    <th>Host / Dest</th>
+                                    <th>Rule Name</th>
+                                    <th>Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-alert-table">
+                                <tr><td colspan="8" class="muted" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: CORRELATED INCIDENTS -->
+            <div id="view-incidents" class="view-section">
+                <div class="panel" style="height: 800px;">
+                    <div class="panel-header">
+                        <div class="panel-title">Cross-Source Correlated Incidents</div>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Correlated At</th>
+                                    <th>Source IP</th>
+                                    <th>Severity</th>
+                                    <th>Sources</th>
+                                    <th>Total Alerts</th>
+                                    <th>Max Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="correlated-table">
+                                <tr><td colspan="6" class="muted" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: PREDICTIONS -->
+            <div id="view-predictions" class="view-section">
+                <div class="panel" style="height: 800px;">
+                    <div class="panel-header">
+                        <div class="panel-title">Campaign & Attack Path Predictions</div>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Attacker IP</th>
+                                    <th>Current Stage</th>
+                                    <th>Predicted Stage</th>
+                                    <th>Prob.</th>
+                                    <th>Likely Campaign</th>
+                                    <th>Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-predictions-table">
+                                <tr><td colspan="7" class="muted" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: INVESTIGATIONS -->
+            <div id="view-investigations" class="view-section">
+                <div class="panel" style="height: 800px;">
+                    <div class="panel-header">
+                        <div class="panel-title">Automated Investigation Reports</div>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Incident ID</th>
+                                    <th>Generated At</th>
+                                    <th>Target IP</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Analyst</th>
+                                </tr>
+                            </thead>
+                            <tbody id="investigations-table">
+                                <tr><td colspan="6" class="muted" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: INTEL & IOC -->
+            <div id="view-intel" class="view-section">
+                <div class="panel" style="height: 800px;">
+                    <div class="panel-header">
+                        <div class="panel-title">Extracted Indicators of Compromise (IOC)</div>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Last Seen</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Associated IP</th>
+                                    <th>Context</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ioc-table">
+                                <tr><td colspan="5" class="muted" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: MITRE -->
+            <div id="view-mitre" class="view-section">
+                <div class="panel-grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">MITRE ATT&CK Technique Frequency</div>
+                        </div>
+                        <div class="panel-content padded">
+                            <div class="chart-container">
+                                <canvas id="mitreChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Top Techniques Details</div>
+                        </div>
+                        <div class="panel-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Technique ID</th>
+                                        <th>Alert Hits</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mitre-table">
+                                    <tr><td colspan="2" class="muted" style="text-align: center;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: TIMELINE -->
+            <div id="view-timeline" class="view-section">
+                <div class="panel" style="height: 800px;">
+                    <div class="panel-header">
+                        <div class="panel-title">Global Event Timeline</div>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Source IP</th>
+                                    <th>Description / Rule</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timeline-table">
+                                <tr><td colspan="5" class="muted" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ── Navigation Logic ──
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                const targetId = item.getAttribute('data-target');
+                document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+                
+                document.getElementById('current-page-title').textContent = item.textContent.trim();
+                
+                // Trigger refresh on tab switch to ensure data is fresh
+                if (targetId !== 'view-home') {
+                    fetchDataForView(targetId);
+                }
+            });
+        });
+
+        // ── Formatting Utilities ──
+        function formatTime(isoStr) {
+            if (!isoStr) return '—';
+            const d = new Date(isoStr);
+            return d.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
+        }
+
+        function formatDateTime(isoStr) {
+            if (!isoStr) return '—';
+            const d = new Date(isoStr);
+            return d.toLocaleString([], { hour12: false, month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' });
+        }
+
+        function getSeverityTag(sev) {
+            sev = (sev || 'info').toLowerCase();
+            return `<span class="tag ${sev}">${sev}</span>`;
+        }
+
+        function getSourceTag(src) {
+            src = (src || 'unknown').toLowerCase();
+            return `<span class="tag source-${src}">${src}</span>`;
+        }
+
+        // ── Charts Setup ──
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter';
+
+        let severityChartInstance = null;
+        function updateSeverityChart(data) {
+            const ctx = document.getElementById('severityChart');
+            if (!ctx) return;
+            
+            const labels = ['Critical', 'High', 'Medium', 'Low', 'Info'];
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+            
+            const counts = [
+                data.critical || 0,
+                data.high || 0,
+                data.medium || 0,
+                data.low || 0,
+                data.info || 0
+            ];
+
+            if (severityChartInstance) {
+                severityChartInstance.data.datasets[0].data = counts;
+                severityChartInstance.update();
+            } else {
+                severityChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: colors,
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+        }
+
+        let mitreChartInstance = null;
+        function updateMitreChart(data) {
+            const ctx = document.getElementById('mitreChart');
+            if (!ctx) return;
+            
+            const labels = data.slice(0, 10).map(d => d.technique);
+            const counts = data.slice(0, 10).map(d => d.count);
+
+            if (mitreChartInstance) {
+                mitreChartInstance.data.labels = labels;
+                mitreChartInstance.data.datasets[0].data = counts;
+                mitreChartInstance.update();
+            } else {
+                mitreChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Alert Hits',
+                            data: counts,
+                            backgroundColor: '#0ea5e9',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: '#334155' } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // ── Data Fetching & DOM Updating ──
+        const API_BASE = '/api/v1/dashboard';
+
+        // 1. Home Metrics & Live Alerts
+        async function fetchMetrics() {
+            try {
+                const res = await fetch(`${API_BASE}/metrics`);
+                const data = await res.json();
+                
+                document.getElementById('kpi-events').textContent = data.total_events.toLocaleString();
+                document.getElementById('kpi-alerts').textContent = data.total_alerts.toLocaleString();
+                document.getElementById('kpi-attackers').textContent = data.unique_attackers.toLocaleString();
+                
+                document.getElementById('kpi-suricata').textContent = `Suricata: ${data.suricata_events.toLocaleString()}`;
+                document.getElementById('kpi-wazuh').textContent = `Wazuh: ${data.wazuh_events.toLocaleString()}`;
+                
+                document.getElementById('kpi-critical').textContent = `Critical: ${data.critical_alerts}`;
+                document.getElementById('kpi-high').textContent = `High: ${data.high_alerts}`;
+                document.getElementById('kpi-avg-risk').textContent = `Avg Risk Score: ${data.avg_risk_score}`;
+
+                // Extract severity breakdown from metrics if available
+                const sev = data.severity_breakdown || {};
+                updateSeverityChart({
+                    critical: sev.critical || 0,
+                    high: sev.high || 0,
+                    medium: sev.medium || 0,
+                    low: sev.low || 0,
+                    info: sev.informational || 0
+                });
+
+                document.getElementById('api-status').className = 'connection-status';
+                document.getElementById('api-status').innerHTML = '<span class="status-indicator"></span> API Online';
+            } catch (err) {
+                console.error("Metrics fetch error:", err);
+                document.getElementById('api-status').className = 'connection-status disconnected';
+                document.getElementById('api-status').innerHTML = '<span class="status-indicator" style="background-color:var(--critical);box-shadow:none;"></span> API Offline';
+            }
+        }
+
+        async function fetchTopAttackers() {
+            const res = await fetch(`${API_BASE}/top-attackers?limit=5`);
+            const data = await res.json();
+            const tbody = document.getElementById('top-attackers-body');
+            
+            if (data.attackers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align: center;">No attackers tracked</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.attackers.map(a => `
+                <tr>
+                    <td class="mono">${a.source_ip}</td>
+                    <td>${a.alert_count}</td>
+                    <td><span style="color: ${a.max_risk > 70 ? 'var(--critical)' : 'inherit'}">${a.max_risk}</span></td>
+                    <td class="muted">${formatDateTime(a.last_seen)}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchForecasts() {
+            const res = await fetch(`${API_BASE}/predictions`);
+            const data = await res.json();
+            const tbody = document.getElementById('forecast-body');
+            
+            if (!data.live_forecasts || data.live_forecasts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="muted" style="text-align: center;">No active forecasts</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.live_forecasts.slice(0,5).map(f => `
+                <tr>
+                    <td class="mono">${f.source_ip}</td>
+                    <td>${f.predicted_stage || 'Unknown'}</td>
+                    <td>${f.probability}%</td>
+                </tr>
+            `).join('');
+        }
+
+        // View specific fetchers
+        async function fetchAllAlerts() {
+            const res = await fetch(`${API_BASE}/alerts?limit=50`);
+            const data = await res.json();
+            const tbody = document.getElementById('full-alert-table');
+            
+            if (data.alerts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="muted" style="text-align: center;">No alerts found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.alerts.map(a => `
+                <tr>
+                    <td class="muted">${formatDateTime(a.created_at)}</td>
+                    <td class="mono text-truncate" title="${a.alert_id}">${a.alert_id.substring(0,12)}...</td>
+                    <td>${getSeverityTag(a.severity)}</td>
+                    <td>${getSourceTag(a.source_type)}</td>
+                    <td class="mono">${a.source_ip}</td>
+                    <td class="mono">${a.affected_host || '—'}</td>
+                    <td class="text-truncate" title="${a.rule_name}">${a.rule_name}</td>
+                    <td>${a.risk_score}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchCorrelations() {
+            const res = await fetch(`${API_BASE}/correlated`);
+            const data = await res.json();
+            const tbody = document.getElementById('correlated-table');
+            
+            document.getElementById('kpi-incidents').textContent = data.total || 0;
+
+            if (!data.incidents || data.incidents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align: center;">No correlated incidents yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.incidents.map(i => `
+                <tr>
+                    <td class="muted">${formatDateTime(i.correlated_at)}</td>
+                    <td class="mono">${i.source_ip}</td>
+                    <td>${getSeverityTag(i.severity)}</td>
+                    <td>${i.sources.map(s => getSourceTag(s)).join(' ')}</td>
+                    <td>${i.alert_count}</td>
+                    <td style="color: ${i.risk_score > 70 ? 'var(--critical)' : 'inherit'}">${i.risk_score}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchInvestigations() {
+            const res = await fetch(`${API_BASE}/investigations`);
+            const data = await res.json();
+            const tbody = document.getElementById('investigations-table');
+            
+            if (!data.investigations || data.investigations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align: center;">No investigations generated</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.investigations.map(i => `
+                <tr>
+                    <td class="mono">${i.incident_id}</td>
+                    <td class="muted">${formatDateTime(i.created_at)}</td>
+                    <td class="mono">${i.source_ip}</td>
+                    <td>${getSeverityTag(i.severity)}</td>
+                    <td><span class="tag" style="background:rgba(255,255,255,0.1)">${i.status}</span></td>
+                    <td>${i.assigned_analyst || 'unassigned'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchIOCs() {
+            const res = await fetch(`${API_BASE}/ioc?limit=100`);
+            const data = await res.json();
+            const tbody = document.getElementById('ioc-table');
+            
+            if (!data.iocs || data.iocs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align: center;">No IOCs extracted</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.iocs.map(i => `
+                <tr>
+                    <td class="muted">${formatDateTime(i.last_seen)}</td>
+                    <td><span class="tag" style="background:rgba(255,255,255,0.1)">${i.ioc_type}</span></td>
+                    <td class="mono text-truncate" title="${i.value}">${i.value}</td>
+                    <td class="mono">${i.source_ip || '—'}</td>
+                    <td>${i.context || '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchMitre() {
+            const res = await fetch(`${API_BASE}/mitre`);
+            const data = await res.json();
+            const tbody = document.getElementById('mitre-table');
+            
+            if (!data.techniques || data.techniques.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="muted" style="text-align: center;">No MITRE data mapped</td></tr>';
+                return;
+            }
+
+            updateMitreChart(data.techniques);
+
+            tbody.innerHTML = data.techniques.map(t => `
+                <tr>
+                    <td class="mono">${t.technique}</td>
+                    <td>${t.count}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchTimeline() {
+            const res = await fetch(`${API_BASE}/timeline?limit=100`);
+            const data = await res.json();
+            const tbody = document.getElementById('timeline-table');
+            
+            if (!data.timeline || data.timeline.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align: center;">No events recorded</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.timeline.map(t => {
+                const isAlert = t.kind === 'alert';
+                const typeTag = `<span class="tag" style="background:${isAlert ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)'}">${t.kind}</span>`;
+                return `
+                <tr ${isAlert ? 'style="background:rgba(239,68,68,0.05)"' : ''}>
+                    <td class="muted">${formatTime(t.ts)}</td>
+                    <td>${typeTag}</td>
+                    <td>${getSeverityTag(t.severity)}</td>
+                    <td class="mono">${t.source_ip || '—'}</td>
+                    <td class="text-truncate" title="${t.label}">${t.label}</td>
+                </tr>
+            `}).join('');
+        }
+
+        function fetchDataForView(viewId) {
+            if (viewId === 'view-live') fetchAllAlerts();
+            else if (viewId === 'view-incidents') fetchCorrelations();
+            else if (viewId === 'view-predictions') fetchForecasts(); // todo full table
+            else if (viewId === 'view-investigations') fetchInvestigations();
+            else if (viewId === 'view-intel') fetchIOCs();
+            else if (viewId === 'view-mitre') fetchMitre();
+            else if (viewId === 'view-timeline') fetchTimeline();
+        }
+
+        // ── WebSocket Live Push ──
+        let ws;
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            // Use current host if deployed, else default to localhost:8000 for local dev testing
+            const host = window.location.host || 'localhost:8000'; 
+            const wsUrl = `${protocol}//${host}/ws/live`;
+            
+            const led = document.getElementById('ws-status-led');
+            const txt = document.getElementById('ws-status-text');
+
+            led.style.backgroundColor = 'var(--medium)';
+            txt.textContent = 'WS Connecting...';
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                led.style.backgroundColor = 'var(--low)';
+                led.style.boxShadow = '0 0 8px var(--low)';
+                txt.textContent = 'Live Feed Connected';
+                
+                // Ping to keep alive
+                setInterval(() => {
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ action: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'update') {
+                    handleWsUpdate(data);
+                }
+            };
+
+            ws.onclose = () => {
+                led.style.backgroundColor = 'var(--critical)';
+                led.style.boxShadow = '0 0 8px var(--critical)';
+                txt.textContent = 'Live Feed Disconnected';
+                setTimeout(connectWebSocket, 5000); // Reconnect
+            };
+            
+            ws.onerror = (err) => {
+                console.error("WebSocket error:", err);
+            }
+        }
+
+        function handleWsUpdate(data) {
+            // Update Metrics
+            if (data.metrics) {
+                document.getElementById('kpi-events').textContent = (data.metrics.total_events || 0).toLocaleString();
+                document.getElementById('kpi-alerts').textContent = (data.metrics.total_alerts || 0).toLocaleString();
+                document.getElementById('kpi-attackers').textContent = (data.metrics.unique_attackers || 0).toLocaleString();
+                document.getElementById('kpi-critical').textContent = `Critical: ${data.metrics.critical_alerts || 0}`;
+                document.getElementById('kpi-high').textContent = `High: ${data.metrics.high_alerts || 0}`;
+                document.getElementById('kpi-avg-risk').textContent = `Avg Risk Score: ${data.metrics.avg_risk_score || 0}`;
+            }
+
+            // Update Live Alert Table
+            if (data.alerts && data.alerts.length > 0) {
+                const tbody = document.getElementById('live-alert-table-body');
+                // Remove empty state row if present
+                if (tbody.children[0].children.length === 1) {
+                    tbody.innerHTML = '';
+                }
+
+                data.alerts.forEach(a => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'new-row';
+                    tr.innerHTML = `
+                        <td class="muted">${formatTime(a.created_at)}</td>
+                        <td>${getSeverityTag(a.severity)}</td>
+                        <td class="mono">${a.source_ip}</td>
+                        <td class="text-truncate" title="${a.rule_name}">${a.rule_name}</td>
+                        <td>${getSourceTag(a.source_type)}</td>
+                    `;
+                    tbody.insertBefore(tr, tbody.firstChild);
+                });
+
+                // Keep only top 10
+                while (tbody.children.length > 10) {
+                    tbody.removeChild(tbody.lastChild);
+                }
+            }
+        }
+
+        // ── Initialization ──
+        async function init() {
+            // Initial fetches
+            await fetchMetrics();
+            await fetchTopAttackers();
+            await fetchForecasts();
+            
+            // Connect live push
+            connectWebSocket();
+
+            // Fallback polling for panels that aren't WS-pushed (every 10s)
+            setInterval(() => {
+                fetchMetrics();
+                fetchTopAttackers();
+                fetchForecasts();
+                
+                // Refresh active tab if it's not home
+                const activeTab = document.querySelector('.view-section.active').id;
+                if (activeTab !== 'view-home') {
+                    fetchDataForView(activeTab);
+                }
+            }, 10000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000006",
+    "rule_name": "Ransomware File Extension",
+    "description": "Detects Ransomware File Extension",
+    "category": "Ransomware",
+    "severity": "critical",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Impact",
+            "technique_id": "T1486"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "file.name",
+                "operator": "contains",
+                "value": ".encrypted"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

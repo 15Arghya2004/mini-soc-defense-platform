@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000008",
+    "rule_name": "Privilege Escalation Attempt",
+    "description": "Detects Privilege Escalation Attempt",
+    "category": "Privilege Escalation",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Privilege Escalation",
+            "technique_id": "T1068"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.name",
+                "operator": "equals",
+                "value": "whoami.exe"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

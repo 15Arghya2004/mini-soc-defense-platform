@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000011",
+    "rule_name": "Suspicious Bash History Deletion",
+    "description": "Detects Suspicious Bash History Deletion",
+    "category": "Defense Evasion",
+    "severity": "high",
+    "confidence": 80,
+    "base_risk_score": 60,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Defense Evasion",
+            "technique_id": "T1070"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.command_line",
+                "operator": "contains",
+                "value": "rm ~/.bash_history"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

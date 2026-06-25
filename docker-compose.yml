@@ -1,0 +1,220 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sentrix V10 — Complete SOC Stack
+#
+# Services:
+#   dvwa               — DVWA vulnerable web app (attack target)
+#   suricata           — Suricata IDS monitoring DVWA traffic
+#   wazuh-manager      — Wazuh SIEM manager (single-node)
+#   sentrix-core       — Main Sentrix FastAPI platform
+#   suricata-collector — Tails eve.json → forwards to sentrix-core
+#   wazuh-collector    — Tails alerts.json → forwards to sentrix-core
+#   dashboard          — Nginx serving the live dashboard HTML
+#
+# Start everything:
+#   docker compose up --build
+#
+# Stop:
+#   docker compose down
+#
+# Volumes:
+#   sentrix-data      — All Sentrix persistent data (rules, DBs, exports)
+#   suricata-logs     — Shared between suricata + suricata-collector
+#   wazuh-logs        — Shared between wazuh-manager + wazuh-collector
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── DVWA — Attack Target ──────────────────────────────────────────────────
+  dvwa:
+    image: ghcr.io/digininja/dvwa:latest
+    container_name: sentrix-dvwa
+    restart: unless-stopped
+    environment:
+      - DB_SERVER=dvwa-db
+    ports:
+      - "8080:80"
+    depends_on:
+      - dvwa-db
+    networks:
+      - sentrix-net
+    labels:
+      - "sentrix.role=target"
+
+  dvwa-db:
+    image: mysql:5.7
+    container_name: sentrix-dvwa-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: dvwa
+      MYSQL_DATABASE: dvwa
+      MYSQL_USER: dvwa
+      MYSQL_PASSWORD: p@ssw0rd
+    networks:
+      - sentrix-net
+
+  # ── Suricata IDS ──────────────────────────────────────────────────────────
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: sentrix-suricata
+    restart: unless-stopped
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - suricata-logs:/var/log/suricata
+      - ./suricata:/etc/suricata/rules:ro
+    command: >
+      suricata -c /etc/suricata/suricata.yaml
+      --af-packet
+      -S /etc/suricata/rules/sentrix.rules
+      -l /var/log/suricata
+    labels:
+      - "sentrix.role=ids"
+
+  # ── Wazuh Manager (Single Node) ───────────────────────────────────────────
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.7.5
+    container_name: sentrix-wazuh
+    restart: unless-stopped
+    hostname: wazuh.manager
+    environment:
+      - INDEXER_URL=https://wazuh.indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
+      - FILEBEAT_SSL_VERIFICATION_MODE=full
+      - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
+      - SSL_CERTIFICATE=/etc/ssl/filebeat.pem
+      - SSL_KEY=/etc/ssl/filebeat.key
+      - API_USERNAME=wazuh-wui
+      - API_PASSWORD=MyS3cr37P450r.*
+    volumes:
+      - wazuh-logs:/var/ossec/logs/alerts
+      - wazuh-data:/var/ossec/data
+      - wazuh-etc:/var/ossec/etc
+    ports:
+      - "1514:1514/udp"
+      - "1515:1515"
+      - "514:514/udp"
+      - "55000:55000"
+    networks:
+      - sentrix-net
+    labels:
+      - "sentrix.role=siem"
+
+  # ── Sentrix Core Platform ─────────────────────────────────────────────────
+  sentrix-core:
+    build: .
+    image: sentrix-core:v10
+    container_name: sentrix-core
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - sentrix-data:/data
+    env_file: .env
+    environment:
+      - DATA_DIR=/data
+      - SENTRIX_AUTH_ENABLED=false
+      - LOG_LEVEL=INFO
+    depends_on:
+      - wazuh-manager
+    networks:
+      - sentrix-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/admin/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    labels:
+      - "sentrix.role=core"
+
+  # ── Suricata Collector ────────────────────────────────────────────────────
+  suricata-collector:
+    build: .
+    image: sentrix-core:v10
+    container_name: sentrix-suricata-collector
+    restart: unless-stopped
+    volumes:
+      - suricata-logs:/var/log/suricata:ro
+    environment:
+      - SURICATA_EVE_PATH=/var/log/suricata/eve.json
+      - SENTRIX_API_URL=http://sentrix-core:8000
+      - SENTRIX_AUTH_ENABLED=false
+      - LOG_LEVEL=INFO
+    depends_on:
+      sentrix-core:
+        condition: service_healthy
+    networks:
+      - sentrix-net
+    command: ["python", "-m", "sentrix_core.collectors.suricata_collector"]
+    labels:
+      - "sentrix.role=collector"
+
+  # ── Wazuh Collector ───────────────────────────────────────────────────────
+  wazuh-collector:
+    build: .
+    image: sentrix-core:v10
+    container_name: sentrix-wazuh-collector
+    restart: unless-stopped
+    volumes:
+      - wazuh-logs:/var/ossec/logs/alerts:ro
+    environment:
+      - WAZUH_ALERTS_PATH=/var/ossec/logs/alerts/alerts.json
+      - SENTRIX_API_URL=http://sentrix-core:8000
+      - SENTRIX_AUTH_ENABLED=false
+      - LOG_LEVEL=INFO
+    depends_on:
+      sentrix-core:
+        condition: service_healthy
+    networks:
+      - sentrix-net
+    command: ["python", "-m", "sentrix_core.collectors.wazuh_collector"]
+    labels:
+      - "sentrix.role=collector"
+
+  # ── Dashboard (Nginx) ─────────────────────────────────────────────────────
+  dashboard:
+    image: nginx:alpine
+    container_name: sentrix-dashboard
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./dashboard:/usr/share/nginx/html:ro
+      - ./dashboard/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - sentrix-core
+    networks:
+      - sentrix-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "sentrix.role=dashboard"
+
+# ── Volumes ───────────────────────────────────────────────────────────────────
+volumes:
+  sentrix-data:
+    driver: local
+  suricata-logs:
+    driver: local
+  wazuh-logs:
+    driver: local
+  wazuh-data:
+    driver: local
+  wazuh-etc:
+    driver: local
+
+# ── Networks ──────────────────────────────────────────────────────────────────
+networks:
+  sentrix-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

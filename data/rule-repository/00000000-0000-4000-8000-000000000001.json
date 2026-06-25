@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000001",
+    "rule_name": "Brute Force Authentication",
+    "description": "Detects Brute Force Authentication",
+    "category": "Authentication",
+    "severity": "high",
+    "confidence": 80,
+    "base_risk_score": 60,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Credential Access",
+            "technique_id": "T1110"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "event_type",
+                "operator": "equals",
+                "value": "auth_failure"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

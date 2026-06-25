@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000007",
+    "rule_name": "Large Data Exfiltration",
+    "description": "Detects Large Data Exfiltration",
+    "category": "Exfiltration",
+    "severity": "high",
+    "confidence": 80,
+    "base_risk_score": 60,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Exfiltration",
+            "technique_id": "T1048"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "network.bytes_out",
+                "operator": "greater_than",
+                "value": 500000000
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

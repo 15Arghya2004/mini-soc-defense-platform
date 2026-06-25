@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000020",
+    "rule_name": "Suspicious Download",
+    "description": "Detects Suspicious Download",
+    "category": "Initial Access",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Initial Access",
+            "technique_id": "T1189"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.command_line",
+                "operator": "contains",
+                "value": "Invoke-WebRequest"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000003",
+    "rule_name": "DNS Tunneling Detection",
+    "description": "Detects DNS Tunneling Detection",
+    "category": "C2",
+    "severity": "high",
+    "confidence": 80,
+    "base_risk_score": 60,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Command and Control",
+            "technique_id": "T1071"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "network.dns_query_length",
+                "operator": "greater_than",
+                "value": 150
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

@@ -1,0 +1,115 @@
+# assets.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# Sentrix Asset Register
+#
+# Fields per asset:
+#   hostname        : Human-readable name (for display only)
+#   criticality     : 0.0–1.0  (1.0 = most critical)
+#   network_exposure: 0.0–1.0  (1.0 = internet-facing)
+#   data_sensitivity: 0.0–1.0  (1.0 = contains PII/secrets)
+#   environment     : production | staging | development | lab
+#   owner           : Team or individual accountable for the asset
+#   tags            : List of labels (used for crisis-scope matching)
+#
+# Unknown assets use default_asset values below.
+#
+# This file is hot-reloaded alongside rules — no engine restart required.
+# ─────────────────────────────────────────────────────────────────────────────
+
+default_asset:
+  hostname:         "unknown"
+  criticality:      0.3
+  network_exposure: 0.3
+  data_sensitivity: 0.3
+  environment:      "unknown"
+  owner:            "unassigned"
+  tags:             []
+
+assets:
+
+  # ── Domain Controllers ───────────────────────────────────────────────────────
+  "10.0.0.5":
+    hostname:         "prod-dc-01"
+    criticality:      1.0
+    network_exposure: 0.2
+    data_sensitivity: 1.0
+    environment:      "production"
+    owner:            "infrastructure-team"
+    tags:             ["domain-controller", "tier-0", "active-directory"]
+
+  "10.0.0.6":
+    hostname:         "prod-dc-02"
+    criticality:      1.0
+    network_exposure: 0.2
+    data_sensitivity: 1.0
+    environment:      "production"
+    owner:            "infrastructure-team"
+    tags:             ["domain-controller", "tier-0", "active-directory"]
+
+  # ── Database Servers ─────────────────────────────────────────────────────────
+  "10.0.0.10":
+    hostname:         "prod-db-01"
+    criticality:      0.9
+    network_exposure: 0.1
+    data_sensitivity: 0.9
+    environment:      "production"
+    owner:            "dba-team"
+    tags:             ["database", "postgres", "pii"]
+
+  "10.0.0.11":
+    hostname:         "prod-db-02"
+    criticality:      0.9
+    network_exposure: 0.1
+    data_sensitivity: 0.9
+    environment:      "production"
+    owner:            "dba-team"
+    tags:             ["database", "mysql", "pii"]
+
+  # ── Web / Application Servers ─────────────────────────────────────────────────
+  "10.0.1.5":
+    hostname:         "web-srv-01"
+    criticality:      0.7
+    network_exposure: 1.0
+    data_sensitivity: 0.5
+    environment:      "production"
+    owner:            "devops-team"
+    tags:             ["web", "internet-facing", "nginx"]
+
+  "192.168.50.20":
+    hostname:         "web-srv-01"
+    criticality:      0.7
+    network_exposure: 1.0
+    data_sensitivity: 0.5
+    environment:      "production"
+    owner:            "devops-team"
+    tags:             ["web", "internet-facing"]
+
+  # ── Windows Workstations ──────────────────────────────────────────────────────
+  "192.168.50.21":
+    hostname:         "win-workstation-07"
+    criticality:      0.5
+    network_exposure: 0.3
+    data_sensitivity: 0.4
+    environment:      "production"
+    owner:            "it-helpdesk"
+    tags:             ["windows", "workstation", "sysmon"]
+
+  # ── Dev/Lab Assets ────────────────────────────────────────────────────────────
+  "192.168.1.50":
+    hostname:         "dev-lap-50"
+    criticality:      0.3
+    network_exposure: 0.1
+    data_sensitivity: 0.2
+    environment:      "development"
+    owner:            "dev-team"
+    tags:             ["laptop", "developer"]
+
+  # ── Sentrix Sensor / Security Infrastructure ──────────────────────────────────
+  "127.0.0.1":
+    hostname:         "sentrix-local"
+    criticality:      0.6
+    network_exposure: 0.0
+    data_sensitivity: 0.7
+    environment:      "security"
+    owner:            "soc-team"
+    tags:             ["sentrix", "security-tool"]

@@ -1,0 +1,20 @@
+{
+  "abuseipdb": {
+    "enabled": true
+  },
+  "geoip": {
+    "enabled": true
+  },
+  "wazuh": {
+    "enabled": true
+  },
+  "virustotal": {
+    "enabled": true
+  },
+  "shodan": {
+    "enabled": true
+  },
+  "suricata": {
+    "enabled": true
+  }
+}

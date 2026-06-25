@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000021",
+    "rule_name": "LSASS Memory Dump",
+    "description": "Detects LSASS Memory Dump",
+    "category": "Credential Access",
+    "severity": "critical",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Credential Access",
+            "technique_id": "T1003"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.command_line",
+                "operator": "contains",
+                "value": "procdump"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

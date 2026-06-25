@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000014",
+    "rule_name": "Tor Network Connection",
+    "description": "Detects Tor Network Connection",
+    "category": "C2",
+    "severity": "high",
+    "confidence": 80,
+    "base_risk_score": 60,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Command and Control",
+            "technique_id": "T1090"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "destination.ti_enrichment.source",
+                "operator": "equals",
+                "value": "tor_exit_node"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

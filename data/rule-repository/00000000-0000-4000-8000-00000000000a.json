@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-00000000000a",
+    "rule_name": "Credential Dumping",
+    "description": "Detects Credential Dumping",
+    "category": "Credential Access",
+    "severity": "critical",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Credential Access",
+            "technique_id": "T1003"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.name",
+                "operator": "equals",
+                "value": "mimikatz.exe"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

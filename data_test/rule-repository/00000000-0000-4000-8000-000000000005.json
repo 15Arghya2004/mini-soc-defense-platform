@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000005",
+    "rule_name": "Suspicious PowerShell Execution",
+    "description": "Detects Suspicious PowerShell Execution",
+    "category": "Execution",
+    "severity": "high",
+    "confidence": 80,
+    "base_risk_score": 60,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Execution",
+            "technique_id": "T1059"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.command_line",
+                "operator": "contains",
+                "value": "-EncodedCommand"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

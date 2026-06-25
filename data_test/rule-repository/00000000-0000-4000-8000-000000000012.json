@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000012",
+    "rule_name": "Scheduled Task Creation",
+    "description": "Detects Scheduled Task Creation",
+    "category": "Persistence",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Persistence",
+            "technique_id": "T1053"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.name",
+                "operator": "equals",
+                "value": "schtasks.exe"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

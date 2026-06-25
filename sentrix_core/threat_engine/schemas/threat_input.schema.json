@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SentrixThreatEngineInputPayload",
+  "type": "object",
+  "required": [
+    "normalized_event",
+    "matched_rule",
+    "context_info"
+  ],
+  "properties": {
+    "normalized_event": {
+      "type": "object",
+      "required": ["event_id", "timestamp", "event"]
+    },
+    "matched_rule": {
+      "type": "object",
+      "required": ["rule_id", "rule_name", "severity", "confidence"]
+    },
+    "context_info": {
+      "type": "object",
+      "required": ["crisis_mode", "asset_context", "user_context"],
+      "properties": {
+        "crisis_mode": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "scope": { "type": ["string", "null"] }
+          }
+        },
+        "asset_context": {
+          "type": "object",
+          "required": ["criticality", "network_exposure"],
+          "properties": {
+            "hostname": { "type": "string" },
+            "criticality": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+            "network_exposure": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+          }
+        },
+        "user_context": {
+          "type": "object",
+          "required": ["privilege_level"],
+          "properties": {
+            "username": { "type": "string" },
+            "privilege_level": { "type": "string", "enum": ["user", "admin", "system"] }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "Reconnaissance": {
+    "Resource Development": 0.2,
+    "Initial Access": 0.8
+  },
+
+  "Resource Development": {
+    "Initial Access": 1.0
+  },
+
+  "Initial Access": {
+    "Execution": 0.6,
+    "Persistence": 0.2,
+    "Credential Access": 0.2
+  },
+
+  "Execution": {
+    "Persistence": 0.4,
+    "Privilege Escalation": 0.4,
+    "Discovery": 0.2
+  },
+
+  "Persistence": {
+    "Privilege Escalation": 0.6,
+    "Discovery": 0.4
+  },
+
+  "Privilege Escalation": {
+    "Credential Access": 0.5,
+    "Lateral Movement": 0.5
+  },
+
+  "Credential Access": {
+    "Lateral Movement": 0.6,
+    "Discovery": 0.4
+  },
+
+  "Discovery": {
+    "Lateral Movement": 0.7,
+    "Collection": 0.3
+  },
+
+  "Lateral Movement": {
+    "Collection": 0.5,
+    "Command and Control": 0.5
+  },
+
+  "Collection": {
+    "Exfiltration": 0.8,
+    "Impact": 0.2
+  },
+
+  "Command and Control": {
+    "Exfiltration": 0.7,
+    "Impact": 0.3
+  },
+
+  "Exfiltration": {
+    "Impact": 1.0
+  }
+}

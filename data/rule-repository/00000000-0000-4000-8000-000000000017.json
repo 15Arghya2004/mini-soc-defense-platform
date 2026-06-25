@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000017",
+    "rule_name": "Data Staging",
+    "description": "Detects Data Staging",
+    "category": "Collection",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Collection",
+            "technique_id": "T1074"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.command_line",
+                "operator": "contains",
+                "value": "tar -czf"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}

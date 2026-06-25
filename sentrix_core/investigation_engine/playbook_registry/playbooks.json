@@ -1,0 +1,277 @@
+[
+  {
+    "playbook_id": "PB-END-001",
+    "name": "Reverse Shell Containment",
+    "category": "ENDPOINT",
+    "description": "Isolates endpoints showing shell spawn events from web servers.",
+    "steps": [
+      "Isolate the endpoint from the network.",
+      "Kill the active shell process.",
+      "Collect volatile memory logs."
+    ]
+  },
+  {
+    "playbook_id": "PB-END-002",
+    "name": "Credential Dumping Response",
+    "category": "ENDPOINT",
+    "description": "Responds to suspected LSASS or registry credential access attempts.",
+    "steps": [
+      "Revoke active user session tokens.",
+      "Kill suspected dumping tool processes.",
+      "Trigger system password reset."
+    ]
+  },
+  {
+    "playbook_id": "PB-END-003",
+    "name": "Malware Execution Response",
+    "category": "ENDPOINT",
+    "description": "Contains identified malicious execution threats.",
+    "steps": [
+      "Quarantine suspected executable.",
+      "Verify file hash on threat feeds.",
+      "Run complete antivirus sweep."
+    ]
+  },
+  {
+    "playbook_id": "PB-END-004",
+    "name": "Ransomware Containment",
+    "category": "ENDPOINT",
+    "description": "Halts active encryption processes on hosts.",
+    "steps": [
+      "Isolate network interface immediately.",
+      "Suspend high CPU file IO processes.",
+      "Snapshot volume backups."
+    ]
+  },
+  {
+    "playbook_id": "PB-END-005",
+    "name": "Persistence Removal",
+    "category": "ENDPOINT",
+    "description": "Cleans autostart, runkeys, or malicious tasks.",
+    "steps": [
+      "Delete malicious startup key registries.",
+      "Terminate persistent user sessions.",
+      "Verify task scheduler records."
+    ]
+  },
+  {
+    "playbook_id": "PB-END-006",
+    "name": "Suspicious PowerShell Activity",
+    "category": "ENDPOINT",
+    "description": "Tackles obfuscated or command-line encoded PowerShell executions.",
+    "steps": [
+      "Decode execution parameters.",
+      "Isolate host for forensics analysis.",
+      "Alert endpoint security admin."
+    ]
+  },
+  {
+    "playbook_id": "PB-IAM-001",
+    "name": "Bruteforce Protection",
+    "category": "IAM",
+    "description": "Locks out account after consecutive failed login spikes.",
+    "steps": [
+      "Temporarily lock the targeted account.",
+      "Audit active session sources.",
+      "Force multi-factor challenge reset."
+    ]
+  },
+  {
+    "playbook_id": "PB-IAM-002",
+    "name": "Privilege Escalation Response",
+    "category": "IAM",
+    "description": "Mitigates unauthorized user escalation to administrator.",
+    "steps": [
+      "Strip admin permissions immediately.",
+      "Terminate target session.",
+      "Audit log modification history."
+    ]
+  },
+  {
+    "playbook_id": "PB-IAM-003",
+    "name": "Suspicious Account Creation",
+    "category": "IAM",
+    "description": "Investigates newly created accounts with high privilege mappings.",
+    "steps": [
+      "Disable the newly created account.",
+      "Identify active session creator.",
+      "Verify account approval logs."
+    ]
+  },
+  {
+    "playbook_id": "PB-IAM-004",
+    "name": "MFA Bypass Investigation",
+    "category": "IAM",
+    "description": "Investigates consecutive sessions bypassing authentication requirements.",
+    "steps": [
+      "Disable target account tokens.",
+      "Require MFA re-registration.",
+      "Revoke OAuth client keys."
+    ]
+  },
+  {
+    "playbook_id": "PB-IAM-005",
+    "name": "Password Spray Response",
+    "category": "IAM",
+    "description": "Defends active directories against password spray attacks.",
+    "steps": [
+      "Block attacker source IP address.",
+      "Identify compromised accounts.",
+      "Trigger organization password expiration."
+    ]
+  },
+  {
+    "playbook_id": "PB-NET-001",
+    "name": "Port Scan Response",
+    "category": "NETWORK",
+    "description": "Blocks IPs performing reconnaissance sweep scanning.",
+    "steps": [
+      "Block source IP at gateway firewall.",
+      "Verify system exposed ports.",
+      "Monitor firewall alerts for rebound sweep."
+    ]
+  },
+  {
+    "playbook_id": "PB-NET-002",
+    "name": "Lateral Movement Containment",
+    "category": "NETWORK",
+    "description": "Contain host-to-host movement inside network boundaries.",
+    "steps": [
+      "Apply local segment firewall isolation.",
+      "Expire active Kerberos ticket logs.",
+      "Block RPC/RDP interfaces."
+    ]
+  },
+  {
+    "playbook_id": "PB-NET-003",
+    "name": "Beaconing Detection Response",
+    "category": "NETWORK",
+    "description": "Defends against C2 periodic beaconing channels.",
+    "steps": [
+      "Block domain/IP in proxy configuration.",
+      "Inspect local beacon process roots.",
+      "Re-image infected target endpoints."
+    ]
+  },
+  {
+    "playbook_id": "PB-NET-004",
+    "name": "Command and Control Response",
+    "category": "NETWORK",
+    "description": "Tackles command & control channel connections.",
+    "steps": [
+      "Sever outbound TCP session state.",
+      "Alert global network admin.",
+      "Null route attacker routing tables."
+    ]
+  },
+  {
+    "playbook_id": "PB-NET-005",
+    "name": "Data Exfiltration Response",
+    "category": "NETWORK",
+    "description": "Halts massive data transfers out of the perimeter.",
+    "steps": [
+      "Sever active external transfer pipelines.",
+      "Identify targeted data types.",
+      "Revoke exfiltrating host credentials."
+    ]
+  },
+  {
+    "playbook_id": "PB-APP-001",
+    "name": "SQL Injection Response",
+    "category": "APPLICATION SECURITY",
+    "description": "Mitigates SQL Injection attempts on backend APIs.",
+    "steps": [
+      "Block attacker IP on Application Firewall.",
+      "Sanitize endpoint request body routing.",
+      "Check database queries logs."
+    ]
+  },
+  {
+    "playbook_id": "PB-APP-002",
+    "name": "XSS Response",
+    "category": "APPLICATION SECURITY",
+    "description": "Responds to injected cross site scripting code payloads.",
+    "steps": [
+      "Enable request input encoding filters.",
+      "Purge target caches.",
+      "Verify secure cookie headers parameters."
+    ]
+  },
+  {
+    "playbook_id": "PB-APP-003",
+    "name": "SSRF Response",
+    "category": "APPLICATION SECURITY",
+    "description": "Tackles Server Side Request Forgery threats.",
+    "steps": [
+      "Disable loopback interface routing checks.",
+      "Verify proxy whitelist params.",
+      "Identify targeted backend servers."
+    ]
+  },
+  {
+    "playbook_id": "PB-APP-004",
+    "name": "API Abuse Response",
+    "category": "APPLICATION SECURITY",
+    "description": "Restricts bots or scraping APIs sessions.",
+    "steps": [
+      "Apply rate limiting threshold blocks.",
+      "Revoke active developer keys.",
+      "Block suspected bot user-agents."
+    ]
+  },
+  {
+    "playbook_id": "PB-CLD-001",
+    "name": "Cloud Access Key Abuse",
+    "category": "CLOUD",
+    "description": "Mitigates leaks or usage of static cloud credentials.",
+    "steps": [
+      "Deactivate compromised access keys.",
+      "Review CloudTrail audit records.",
+      "Purge unauthorized resource creations."
+    ]
+  },
+  {
+    "playbook_id": "PB-CLD-002",
+    "name": "Public Cloud Exposure",
+    "category": "CLOUD",
+    "description": "Restricts public exposure settings on VM or subnet.",
+    "steps": [
+      "Remove public IP address configuration.",
+      "Tighten security group mappings.",
+      "Run global cloud audit scripts."
+    ]
+  },
+  {
+    "playbook_id": "PB-CLD-003",
+    "name": "Misconfigured Storage Bucket",
+    "category": "CLOUD",
+    "description": "Secures publicly exposed storage containers.",
+    "steps": [
+      "Disable public read access permissions.",
+      "Apply ACL encryption tags.",
+      "Verify container logging configurations."
+    ]
+  },
+  {
+    "playbook_id": "PB-CLD-004",
+    "name": "Suspicious Cloud Privilege Assignment",
+    "category": "CLOUD",
+    "description": "Tackles unauthorized role bindings in cloud accounts.",
+    "steps": [
+      "Delete suspect role binding policies.",
+      "Force target user logout.",
+      "Revoke credentials of creator account."
+    ]
+  },
+  {
+    "playbook_id": "PB-GOV-001",
+    "name": "Compliance Security Finding",
+    "category": "GOVERNANCE",
+    "description": "Registers standard security violations into incident records.",
+    "steps": [
+      "Document violation mapping details.",
+      "Notify asset compliance owner.",
+      "Trigger routine cleanup playbook."
+    ]
+  }
+]

@@ -1,0 +1,31 @@
+{
+    "rule_id": "00000000-0000-4000-8000-000000000016",
+    "rule_name": "WMI Execution",
+    "description": "Detects WMI Execution",
+    "category": "Execution",
+    "severity": "medium",
+    "confidence": 80,
+    "base_risk_score": 40,
+    "version": "1",
+    "mitre_mapping": [
+        {
+            "tactic": "Execution",
+            "technique_id": "T1047"
+        }
+    ],
+    "conditions": {
+        "all": [
+            {
+                "field": "process.name",
+                "operator": "equals",
+                "value": "wmic.exe"
+            }
+        ]
+    },
+    "recommended_actions": [
+        {
+            "step": 1,
+            "action": "Investigate immediately."
+        }
+    ]
+}
